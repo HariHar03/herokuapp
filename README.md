@@ -1,2 +1,2 @@
 # herokuapp
-for rajesh and mani only
+for rajesh 
