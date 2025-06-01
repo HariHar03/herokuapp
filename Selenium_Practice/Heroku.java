@@ -7,15 +7,21 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.junit.BeforeClass;
 import org.openqa.selenium.Alert;
@@ -72,6 +78,23 @@ public class Heroku {
 	By Prompt=By.xpath("//button[contains(text(),'JS Prompt')]");
 	By dynamiccontent=By.xpath("//a[contains(text(),'Dynamic Content')]");
 	By Dynamiccontents=By.xpath("(//div[@class='row'])[3]/child::div/child::div");
+	By KeyPress=By.xpath("//a[text()='Key Presses']");
+	By keypressinput=By.id("target");
+	By Multiplewindow=By.xpath("//a[text()=\"Multiple Windows\"]");
+	By windowclickhere=By.xpath("//a[text()='Click Here']");
+	By Notification=By.xpath("//a[contains(text(),'Notification')]");
+	By Notificationclick=By.xpath("//a[contains(text(),'Click')]");
+	By notificationmessage=By.id("flash");
+	By RedirectLink=By.xpath("//a[contains(text(),'Redirect')]");
+	By redirectbutton=By.id("redirect");
+	By linkul=By.xpath("//div[@class='example']/child::ul//a");
+	By SecureDownload=By.xpath("//a[contains(text(),'Secure')]");
+	By ShadowDOM=By.xpath("//a[contains(text(),'Shadow')]");
+	By typolink=By.xpath("//a[contains(text(),'Typos')]");
+	By TypoMessage=By.xpath("//div[@class='example']//p[2]");
+	
+	
+	WebDriverWait wait=new WebDriverWait(wd,Duration.ofSeconds(35));
 	
 	
 	@BeforeMethod
@@ -79,6 +102,7 @@ public class Heroku {
 		
 		wd.get("https://the-internet.herokuapp.com/?ref=hackernoon.com");
 		wd.manage().window().maximize();
+		wd.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
 	}
 	
 	
@@ -203,7 +227,8 @@ public class Heroku {
   
 //  @Test
   public void Horizontal() throws InterruptedException {
-	  wd.findElement(Horizontal).click();
+	  WebElement hori=wait.until(ExpectedConditions.elementToBeClickable(Horizontal));
+	  hori.click();
 	  Actions action=new Actions(wd);
 	  WebElement slideButton=wd.findElement(slide);
 	  action.dragAndDropBy(slideButton,50,0).perform();
@@ -286,7 +311,7 @@ public class Heroku {
   }
   
  
-  @Test
+//  @Test
   public void dynamicontent() {
 	  wd.findElement(dynamiccontent).click();
 	  List<WebElement> li=wd.findElements(Dynamiccontents);
@@ -294,7 +319,109 @@ public class Heroku {
 	  
   }
   
+//  @Test
+  public void KeyPress() throws InterruptedException {
+	  wd.findElement(KeyPress).click();
+	  Thread.sleep(2000);
+	  wd.findElement(keypressinput).click();
+	  Actions action=new Actions(wd);
+	  action.sendKeys("h").sendKeys("a").sendKeys("r").sendKeys("i").sendKeys(Keys.ENTER).sendKeys("2").perform();
+  }
   
+//  @Test
+  public void multiplewindow() {
+	  wd.findElement(Multiplewindow).click();
+	  wd.findElement(windowclickhere).click();
+	  Set<String> set=wd.getWindowHandles();
+	  List<String> li=new ArrayList<>(set);
+	  wd.switchTo().window(li.get(1));
+	  Boolean str=wd.getPageSource().contains("New Window");
+	  Assert.assertTrue(str);
+  }
+  
+  
+//  @Test
+  public void NotificationMessage() {
+	  wd.findElement(Notification).click();
+	  wd.findElement(Notificationclick).click();
+	  WebElement notimessage=wait.until(ExpectedConditions.visibilityOfElementLocated(notificationmessage));
+	  String str=notimessage.getText();
+	  while(!str.contains("Action successful")){
+		  wd.findElement(Notificationclick).click();
+		  str=wd.findElement(notificationmessage).getText();
+	  }
+
+  }
+  
+//  @Test
+  public void redirect() throws InterruptedException {
+	  wd.findElement(RedirectLink).click();
+	  wd.findElement(redirectbutton).click();
+	  List<WebElement> li=wd.findElements(linkul);
+	  System.out.println(li.size());
+	  for(WebElement we:li) {
+		  Thread.sleep(2000);
+		  we.click();
+		  String str= wd.getCurrentUrl();
+		  if(str.contains("200") || str.contains("301") || str.contains("404") || str.contains("500")) {
+			  System.out.println(str.substring(str.length()-3,str.length()));
+		  }
+		  wd.navigate().back();
+	  }
+	  
+  }
+  
+//  @Test
+  public void SecureDownload() throws AWTException {
+	  wd.findElement(SecureDownload).click();
+	  Robot rob=new Robot();
+	  String str="admin";
+	  StringSelection string=new StringSelection(str);
+	  Toolkit.getDefaultToolkit().getSystemClipboard().setContents(string, null);
+	  rob.keyPress(KeyEvent.VK_CONTROL);
+	  rob.keyPress(KeyEvent.VK_V);
+	  rob.keyRelease(KeyEvent.VK_CONTROL);
+	  rob.keyRelease(KeyEvent.VK_V);
+	  rob.keyPress(KeyEvent.VK_TAB);
+	  rob.keyRelease(KeyEvent.VK_TAB);
+	  rob.keyPress(KeyEvent.VK_CONTROL);
+	  rob.keyPress(KeyEvent.VK_V);
+	  rob.keyRelease(KeyEvent.VK_CONTROL);
+	  rob.keyRelease(KeyEvent.VK_V);
+	  rob.keyPress(KeyEvent.VK_ENTER);
+	  rob.keyRelease(KeyEvent.VK_ENTER);
+	  
+	  
+	  
+  }
+  
+//  @Test
+  public void shadowDom() {
+	  wd.findElement(ShadowDOM).click();
+	  JavascriptExecutor js=(JavascriptExecutor)wd;
+	  WebElement web=(WebElement)js.executeScript("return document.querySelector('my-paragraph').shadowRoot.querySelector('p')");
+	  String str=web.getText();
+	  System.out.println(str);
+
+  }
+  
+  
+  @Test
+  public void Typo() {
+	  wd.findElement(typolink).click();
+	  String str1="Sometimes you'll see a typo, other times you won,t.";
+	  wd.navigate().refresh();
+	  String web=wd.findElement(TypoMessage).getText();
+	  System.out.println(web+"\n"+str1);
+	  while(!web.equals(str1)) {
+		  wd.navigate().refresh();
+		  web=wd.findElement(TypoMessage).getText();
+	  }
+	  System.out.println(web);
+//	  Assert.assertEquals(web, "Sometimes you'll see a typo, other times you won't.");
+	  
+  }
+   
 //  @AfterClass
   public void QuitBrowser() {
 	  wd.quit();
